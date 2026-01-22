@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Upload, Loader2, Save, User as UserIcon } from "lucide-react";
@@ -14,28 +14,13 @@ export default function ProfileSettingsPage() {
     
     // Local state for form
     const [formData, setFormData] = useState({
-        username: "",
-        name: "",
-        bio: "",
-        avatar: ""
+        username: session?.user?.username || "",
+        name: session?.user?.name || "",
+        bio: session?.user?.bio || "", // We'll need to fetch bio if not in session, but let's assume session update
+        avatar: session?.user?.image || ""
     });
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-        if (session?.user) {
-             setFormData({
-                username: session.user.username || "",
-                name: session.user.name || "",
-                bio: session.user.bio || "",
-                avatar: session.user.image || ""
-            });
-        }
-    }, [session]);
-
-    if (!mounted) return null;
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];

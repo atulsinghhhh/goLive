@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, FormEvent } from "react";
 import { io, Socket } from "socket.io-client";
 import { useSession } from "next-auth/react";
+import { motion } from "framer-motion";
 
 interface Message {
   id: string;
@@ -115,36 +116,44 @@ export const StreamChat = ({ streamId, streamerId }: StreamChatProps) => {
             <p className="text-sm">Welcome to the chat room!</p>
           </div>
         ) : (
-            messages.map((msg) => (
-                <div key={msg.id} className="flex gap-2 group relative">
-                    <div className="w-8 h-8 rounded-full bg-muted shrink-0 overflow-hidden">
-                        {msg.userId.image ? (
-                            <img src={msg.userId.image} alt={msg.userId.username} className="w-full h-full object-cover" />
-                        ) : (
-                             <div className="w-full h-full flex items-center justify-center bg-primary text-xs font-bold text-primary-foreground uppercase">
-                                {msg.userId.username[0]}
-                             </div>
-                        )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                        <div className="flex items-baseline gap-2">
-                            <span className="font-bold text-sm text-foreground">{msg.userId.username}</span>
-                            <span className="text-[10px] text-muted-foreground">{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+            <div className="flex flex-col gap-2">
+                {messages.map((msg, i) => (
+                    <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, ease: "easeOut" }}
+                        key={msg.id} 
+                        className="flex gap-2 group relative p-1 hover:bg-white/5 rounded-lg transition-colors"
+                    >
+                        <div className="w-8 h-8 rounded-full bg-muted shrink-0 overflow-hidden mt-1">
+                            {msg.userId.image ? (
+                                <img src={msg.userId.image} alt={msg.userId.username} className="w-full h-full object-cover" />
+                            ) : (
+                                 <div className="w-full h-full flex items-center justify-center bg-primary text-xs font-bold text-primary-foreground uppercase">
+                                    {msg.userId.username[0]}
+                                 </div>
+                            )}
                         </div>
-                        <p className="text-sm text-foreground/90 break-words leading-relaxed">{msg.message}</p>
-                    </div>
-                    
-                    {isStreamer && msg.userId.username !== session?.user?.username && (
-                        <button 
-                            onClick={() => handleBlockUser(msg.userId.username)} // Warning: This should be ID, but let's assume we map it or finding by username later. Wait, socket needs ID.
-                            className="absolute right-0 top-0 p-1 bg-destructive/10 text-destructive rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/20"
-                            title="Block User"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
-                        </button>
-                    )}
-                </div>
-            ))
+                        <div className="min-w-0 flex-1">
+                            <div className="flex items-baseline gap-2">
+                                <span className="font-bold text-sm text-foreground">{msg.userId.username}</span>
+                                <span className="text-[10px] text-muted-foreground">{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            </div>
+                            <p className="text-sm text-foreground/90 break-words leading-relaxed">{msg.message}</p>
+                        </div>
+                        
+                        {isStreamer && msg.userId.username !== session?.user?.username && (
+                            <button 
+                                onClick={() => handleBlockUser(msg.userId.username)}
+                                className="absolute right-2 top-2 p-1 bg-destructive/10 text-destructive rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/20"
+                                title="Block User"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                            </button>
+                        )}
+                    </motion.div>
+                ))}
+            </div>
         )}
         <div ref={messagesEndRef} />
       </div>

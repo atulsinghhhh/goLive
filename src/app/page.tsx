@@ -21,9 +21,19 @@ interface StreamType {
 }
 
 export default function HomePage() {
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
     const [streams, setStreams] = useState<StreamType[]>([]);
     const [loading, setLoading] = useState(true);
+    
+    useEffect(() => {
+        if (status === 'authenticated') {
+            console.log("Session Username:", session?.user?.username);
+        } else if (status === 'loading') {
+            console.log("Session Loading...");
+        } else {
+            console.log("Session Unauthenticated");
+        }
+    }, [session, status]);
 
     useEffect(() => {
         const fetchStreams = async () => {
@@ -42,6 +52,7 @@ export default function HomePage() {
             }
         };
 
+        console.log("username: ", session?.user?.username)
         fetchStreams();
         const interval = setInterval(fetchStreams, 10000); 
         return () => clearInterval(interval);
@@ -62,11 +73,14 @@ export default function HomePage() {
                     </Link>
                     <div className="flex gap-4 items-center">
                          <div className="hidden md:block relative w-64 lg:w-80">
-                             <input 
-                                type="text" 
-                                placeholder="Search..." 
-                                className="w-full bg-input border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-primary transition-colors text-foreground placeholder:text-muted-foreground"
-                             />
+                             <form action="/search">
+                                 <input 
+                                    name="q"
+                                    type="text" 
+                                    placeholder="Search..." 
+                                    className="w-full bg-input border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-primary transition-colors text-foreground placeholder:text-muted-foreground"
+                                 />
+                             </form>
                          </div>
                     </div>
                     <div className="flex gap-3 items-center">
@@ -108,7 +122,6 @@ export default function HomePage() {
 
                 {/* Main Content */}
                 <main className="p-6 md:p-8 overflow-y-auto flex-1 scrollbar-hide">
-                    {/* Hero Section */}
                     <div className="mb-10">
                         <HeroCarousel stream={featuredStream} />
                     </div>

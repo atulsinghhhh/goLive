@@ -77,17 +77,25 @@ export default function DashboardClient({ user }: DashboardClientProps) {
     }
   };
 
+  // Variants for Page Transition
+  const pageVariants = {
+    initial: { opacity: 0, scale: 0.98 },
+    animate: { opacity: 1, scale: 1, transition: { duration: 0.4, ease: "easeOut" } },
+    exit: { opacity: 0, scale: 0.98 }
+  };
+
   return (
-    <div className="min-h-screen bg-background text-foreground p-8 space-y-8">
+    <motion.div 
+        variants={pageVariants}
+        initial="initial"
+        animate="animate"
+        className="min-h-screen bg-background text-foreground p-4 md:p-8 space-y-8"
+    >
       {/* Header */}
-      <motion.div 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex justify-between items-center bg-card p-6 rounded-2xl border border-border backdrop-blur-sm shadow-lg"
-      >
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-card p-6 rounded-2xl border border-border shadow-lg gap-4">
         <div>
-          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-linear-to-r from-primary to-secondary">
-            Welcome back, {user.username}
+          <h1 className="text-3xl font-bold text-foreground">
+            Welcome back, <span className="text-primary">{user.username}</span>
           </h1>
           <p className="text-muted-foreground mt-1">Ready to create content today?</p>
         </div>
@@ -100,36 +108,32 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                 {mounted ? new Date().toLocaleDateString() : 'Loading...'}
             </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Analytics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatsCard 
             label="Total Streams" 
             value={stats.totalStreams} 
             icon={<Video size={20} />} 
-            
             delay={0.1} 
         />
         <StatsCard 
             label="Avg. Viewers" 
             value={stats.avgViewers} 
             icon={<UserIcon size={20} />} 
-            
             delay={0.2} 
         />
         <StatsCard 
             label="Total Watch Time (Hrs)" 
             value={stats.totalHours} 
             icon={<Clock size={20} />} 
-            trendColor="gray"
             delay={0.3} 
         />
         <StatsCard 
             label="Chat Activity" 
             value={stats.chatCount} 
             icon={<MessageSquare size={20} />} 
-            
             delay={0.4} 
         />
       </div>
@@ -144,20 +148,21 @@ export default function DashboardClient({ user }: DashboardClientProps) {
             />
             
             {/* Action Bar */}
-            <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                className="bg-primary/10 border border-primary/20 rounded-xl p-6 flex justify-between items-center"
-            >
+            <div className="bg-card border border-border rounded-xl p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                   <h3 className="text-primary font-bold text-lg">Ready to start?</h3> 
+                   <h3 className="text-foreground font-bold text-lg">Ready to start?</h3> 
                    <p className="text-muted-foreground text-sm">Your audience is waiting.</p>
                 </div>
-                <button
+                
+                {/* Go Live Button with Motion */}
+                <motion.button
+                    whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(124, 92, 255, 0.4)" }}
+                    whileTap={{ scale: 0.95 }}
+                    animate={{ boxShadow: "0 0 10px rgba(124, 92, 255, 0.2)" }}
+                    transition={{ duration: 0.2 }}
                     onClick={handleGoLive}
                     disabled={loading}
-                    className="px-8 py-4 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-bold shadow-lg shadow-primary/20 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="px-8 py-4 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-bold shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3"
                 >
                     {loading ? (
                         <>
@@ -165,20 +170,15 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                         </>
                     ) : (
                         <>
-                            <Radio className="w-5 h-5" /> Go Live Now
+                            <Radio className="w-5 h-5 animate-pulse" /> Go Live Now
                         </>
                     )}
-                </button>
-            </motion.div>
+                </motion.button>
+            </div>
         </div>
 
         {/* Quick Tips / Connection Info (1/3 width) */}
-        <motion.div 
-             initial={{ opacity: 0, x: 20 }}
-             animate={{ opacity: 1, x: 0 }}
-             transition={{ delay: 0.6 }}
-             className="bg-card border border-border rounded-xl p-6 h-fit shadow-md"
-        >
+        <div className="bg-card border border-border rounded-xl p-6 h-fit shadow-md">
             <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
                 <span className="w-1 h-6 bg-secondary rounded-full"></span>
                 Stream Info
@@ -200,8 +200,8 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                     <p>💡 <strong>Pro Tip:</strong> Check your internet connection before going live to ensure a smooth stream.</p>
                 </div>
             </div>
-        </motion.div>
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

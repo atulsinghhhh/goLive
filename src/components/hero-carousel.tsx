@@ -34,8 +34,6 @@ export function HeroCarousel({ stream }: { stream: Stream | null }) {
 
     return (
         <div className="w-full h-[400px] bg-zinc-900 rounded-xl overflow-hidden relative group shadow-2xl shadow-purple-900/10">
-            {/* Background / Video Placeholder */}
-            {/* In a real app, this would be a video player preview */}
             <div className="absolute inset-0 bg-zinc-800">
                 <div className="w-full h-full flex items-center justify-center text-zinc-700">
                     <Play size={64} fill="currentColor" className="opacity-50" />
