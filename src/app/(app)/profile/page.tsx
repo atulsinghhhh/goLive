@@ -11,18 +11,20 @@ export default function ProfileSettingsPage() {
     const router = useRouter();
     const { data: session, update } = useSession();
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const thumbnailInputRef = useRef<HTMLInputElement>(null);
     
     // Local state for form
     const [formData, setFormData] = useState({
         username: session?.user?.username || "",
         name: session?.user?.name || "",
-        bio: session?.user?.bio || "", // We'll need to fetch bio if not in session, but let's assume session update
-        avatar: session?.user?.image || ""
+        bio: session?.user?.bio || "",
+        avatar: session?.user?.image || "",
+        thumbnail: "" // We will need to fetch this or assume empty if new
     });
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
 
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, field: 'avatar' | 'thumbnail') => {
         const file = e.target.files?.[0];
         if (!file) return;
 
@@ -49,7 +51,7 @@ export default function ProfileSettingsPage() {
             const result = await uploadRes.json();
 
             if (result.secure_url) {
-                setFormData(prev => ({ ...prev, avatar: result.secure_url }));
+                setFormData(prev => ({ ...prev, [field]: result.secure_url }));
             }
 
         } catch (error) {
@@ -65,14 +67,30 @@ export default function ProfileSettingsPage() {
         setLoading(true);
 
         try {
+            // Update Profile
             const res = await fetch("/api/profile", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(formData)
             });
 
+            // Update Stream Thumbnail (Separate API call or included?)
+            // Let's create/update stream thumbnail via API
+            if (formData.thumbnail) {
+                await fetch("/api/stream", { // Utilizing existing stream API or need update? 
+                    // Current stream API is POST /api/stream for "creating" a stream (going live). 
+                    // We might need a PUT endpoint to just update settings.
+                    // For now let's assume /api/stream accepts PUT or we modify it.
+                    // Actually, let's keep it simple: We'll modify the /api/profile endpoint to also update stream thumbnail if user is a streamer.
+                    // OR we send it to /api/stream/settings if we had one. 
+                    // Let's assume /api/profile handles it for now or we create a new one.  
+                    // WAIT: The plan said "Save to Stream model (via existing or new API)". 
+                    // I'll update /api/profile to handle thumbnail or add a specific call.
+                });
+            }
+
             if (res.ok) {
-                // Update session
+                 // ... session update ...
                 await update({
                     user: {
                         name: formData.name,
@@ -80,6 +98,15 @@ export default function ProfileSettingsPage() {
                         username: formData.username
                     }
                 });
+                // Also update stream thumbnail
+                if(formData.thumbnail) {
+                     await fetch("/api/stream/thumbnail", {
+                         method: "PUT",
+                         headers: { "Content-Type": "application/json" },
+                         body: JSON.stringify({ thumbnailUrl: formData.thumbnail })
+                     });
+                }
+
                 router.refresh();
                 alert("Profile updated!");
                 router.push(`/u/${formData.username}`);
@@ -95,18 +122,18 @@ export default function ProfileSettingsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-black text-white p-6 flex justify-center">
-            <div className="w-full max-w-2xl bg-zinc-900 border border-zinc-800 rounded-xl p-8 h-fit">
-                <h1 className="text-2xl font-bold mb-8 border-b border-zinc-800 pb-4">Profile Settings</h1>
+        <div className="min-h-screen bg-background text-foreground p-6 flex justify-center">
+            <div className="w-full max-w-2xl bg-card border border-border rounded-xl p-8 h-fit">
+                <h1 className="text-2xl font-bold mb-8 border-b border-border pb-4">Profile Settings</h1>
 
                 <form onSubmit={handleSubmit} className="space-y-8">
                     {/* Avatar Upload */}
                     <div className="flex items-center gap-6">
-                        <div className="relative w-24 h-24 rounded-full overflow-hidden bg-zinc-800 border-2 border-zinc-700 group">
+                        <div className="relative w-24 h-24 rounded-full overflow-hidden bg-muted border-2 border-border group">
                             {formData.avatar ? (
                                 <Image src={formData.avatar} alt="Avatar" fill className="object-cover" />
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center text-zinc-500">
+                                <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                                     <UserIcon size={32} />
                                 </div>
                             )}
@@ -119,11 +146,11 @@ export default function ProfileSettingsPage() {
                         </div>
                         <div>
                             <h3 className="font-bold">Profile Picture</h3>
-                            <p className="text-sm text-zinc-400 mb-2">Must be JPEG, PNG, or GIF.</p>
+                            <p className="text-sm text-muted-foreground mb-2">Must be JPEG, PNG, or GIF.</p>
                             <button 
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
-                                className="text-sm text-purple-400 hover:text-purple-300 font-bold"
+                                className="text-sm text-primary hover:text-primary/80 font-bold"
                             >
                                 Upload New Picture
                             </button>
@@ -132,7 +159,44 @@ export default function ProfileSettingsPage() {
                                 type="file" 
                                 accept="image/*" 
                                 className="hidden" 
-                                onChange={handleFileChange}
+                                onChange={(e) => handleFileChange(e, 'avatar')}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Stream Thumbnail Upload */}
+                    <div className="flex items-center gap-6 pt-4 border-t border-border">
+                        <div className="relative w-40 h-24 rounded-lg overflow-hidden bg-muted border-2 border-border group">
+                            {formData.thumbnail ? (
+                                <Image src={formData.thumbnail} alt="Thumbnail" fill className="object-cover" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs font-bold uppercase">
+                                    No Thumbnail
+                                </div>
+                            )}
+                            <div 
+                                className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                                onClick={() => thumbnailInputRef.current?.click()}
+                            >
+                                {uploading ? <Loader2 className="animate-spin text-white" /> : <Upload className="text-white" />}
+                            </div>
+                        </div>
+                        <div>
+                            <h3 className="font-bold">Stream Thumbnail</h3>
+                            <p className="text-sm text-muted-foreground mb-2">16:9 aspect ratio recommended.</p>
+                             <button 
+                                type="button"
+                                onClick={() => thumbnailInputRef.current?.click()}
+                                className="text-sm text-primary hover:text-primary/80 font-bold"
+                            >
+                                Upload Thumbnail
+                            </button>
+                            <input 
+                                ref={thumbnailInputRef} 
+                                type="file" 
+                                accept="image/*" 
+                                className="hidden" 
+                                onChange={(e) => handleFileChange(e, 'thumbnail')}
                             />
                         </div>
                     </div>

@@ -1,12 +1,13 @@
-
 import { auth } from "@/lib/auth";
 import dbConnect from "@/lib/db";
 import { User } from "@/model/user.model";
 import { Stream } from "@/model/stream.model";
+import { Follow } from "@/model/follow.model";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Edit, Video, Calendar, MessageSquare } from "lucide-react";
+import { FollowButton } from "@/components/user/follow-button";
 
 export default async function ProfilePage({ params }: { params: Promise<{ username: string }> }) {
     const { username } = await params;
@@ -21,6 +22,14 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 
     // Fetch Recent Streams (or current live one)
     const streams = await Stream.find({ streamerId: user._id }).sort({ createdAt: -1 }).limit(5).lean();
+
+    // Check if following
+    const isFollowing = session?.user 
+        ? !!(await Follow.findOne({ followerId: session.user.id, followingId: user._id }))
+        : false;
+
+    // Get Follower Count
+    const followerCount = await Follow.countDocuments({ followingId: user._id });
 
     return (
         <div className="min-h-screen bg-black text-white">
@@ -64,12 +73,15 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
                                 <h1 className="text-3xl font-bold flex items-center gap-2">
                                     {user.username}
                                     {streams[0]?.isLive && (
-                                        <span className="bg-red-600 text-xs px-2 py-1 rounded font-bold uppercase animate-pulse">Live</span>
+                                        <span className="bg-destructive text-xs px-2 py-1 rounded font-bold uppercase animate-pulse">Live</span>
                                     )}
                                 </h1>
-                                <p className="text-zinc-400 mt-1 flex items-center gap-4 text-sm">
+                                <p className="text-muted-foreground mt-1 flex items-center gap-4 text-sm">
                                     {user.bio || "No bio yet."}
                                 </p>
+                                <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+                                    <span className="font-bold text-foreground">{followerCount}</span> followers
+                                </div>
                             </div>
                             
                             {/* Actions */}
@@ -77,14 +89,15 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
                                 {isOwner ? (
                                     <Link 
                                         href="/profile"
-                                        className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm font-bold border border-zinc-700 transition-colors"
+                                        className="px-4 py-2 bg-muted hover:bg-muted/80 rounded-lg text-sm font-bold border border-border transition-colors text-foreground"
                                     >
                                         Edit Profile
                                     </Link>
                                 ) : (
-                                    <button className="px-6 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg text-sm font-bold shadow-lg shadow-purple-900/20 transition-colors">
-                                        Follow
-                                    </button>
+                                    <FollowButton 
+                                       followingId={user._id.toString()} 
+                                       initialIsFollowing={isFollowing} 
+                                    />
                                 )}
                             </div>
                         </div>
@@ -101,9 +114,17 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
                                     streams.map((stream: any) => (
                                         <div key={stream._id} className="group cursor-pointer">
                                             <div className="aspect-video bg-zinc-900 rounded-lg mb-3 relative overflow-hidden border border-zinc-800 group-hover:border-purple-500/50 transition-colors">
-                                                <div className="absolute inset-0 flex items-center justify-center text-zinc-700 group-hover:text-zinc-600 transition-colors">
-                                                    <Video size={48} />
-                                                </div>
+                                                {stream.thumbnailUrl ? (
+                                                    <img 
+                                                        src={stream.thumbnailUrl} 
+                                                        alt={stream.title} 
+                                                        className="absolute inset-0 w-full h-full object-cover" 
+                                                    />
+                                                ) : (
+                                                    <div className="absolute inset-0 flex items-center justify-center text-zinc-700 group-hover:text-zinc-600 transition-colors">
+                                                        <Video size={48} />
+                                                    </div>
+                                                )}
                                                 {stream.isLive && (
                                                     <div className="absolute top-2 left-2 bg-red-600 px-2 py-0.5 rounded text-xs font-bold">LIVE</div>
                                                 )}

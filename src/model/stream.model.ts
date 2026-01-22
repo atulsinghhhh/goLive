@@ -8,6 +8,7 @@ export interface IStream extends Document {
     isLive: boolean;
     peakViewers?: number;
     blockedUsers: mongoose.Schema.Types.ObjectId[];
+    thumbnailUrl?: string;
 }
 
 const streamSchema = new Schema<IStream>({

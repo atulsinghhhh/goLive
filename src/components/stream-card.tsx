@@ -7,6 +7,7 @@ interface StreamCardProps {
         category: string;
         agoraChannel: string;
         viewerCount: number;
+        thumbnailUrl?: string;
         streamerId: {
             username: string;
             avatar?: string;
@@ -20,15 +21,23 @@ export const StreamCard = ({ stream }: StreamCardProps) => {
       <div className="group cursor-pointer">
         {/* Thumbnail Placeholder */}
         <div className="relative aspect-video rounded-lg overflow-hidden bg-muted mb-2 transition-transform group-hover:translate-y-[-4px] group-hover:shadow-xl group-hover:shadow-primary/20 border border-border group-hover:border-primary/50">
-           {/* Gradient or Image */}
-           <div className="absolute inset-0 bg-linear-to-br from-card to-muted group-hover:from-card group-hover:to-card transition-colors"></div>
-           
-           {/* Center Channel Initial */}
-           <div className="absolute inset-0 flex items-center justify-center">
-               <span className="text-4xl font-bold text-muted-foreground group-hover:text-primary transition-colors uppercase">
-                   {stream.agoraChannel[0]}
-               </span>
-           </div>
+           {/* Thumbnail Image or Gradient Fallback */}
+           {stream.thumbnailUrl ? (
+               <img 
+                   src={stream.thumbnailUrl} 
+                   alt={stream.title} 
+                   className="absolute inset-0 w-full h-full object-cover" 
+               />
+           ) : (
+               <>
+                   <div className="absolute inset-0 bg-linear-to-br from-card to-muted group-hover:from-card group-hover:to-card transition-colors"></div>
+                   <div className="absolute inset-0 flex items-center justify-center">
+                       <span className="text-4xl font-bold text-muted-foreground group-hover:text-primary transition-colors uppercase">
+                           {stream.agoraChannel[0]}
+                       </span>
+                   </div>
+               </>
+           )}
 
            {/* Live Badge */}
            <div className="absolute top-2 left-2 bg-destructive text-destructive-foreground text-xs font-bold px-2 py-0.5 rounded">

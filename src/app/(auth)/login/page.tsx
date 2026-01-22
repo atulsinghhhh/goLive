@@ -31,7 +31,7 @@ export default function LoginPage() {
       if (result?.error) {
         setError("Invalid email or password");
       } else {
-        router.push("/dashboard"); // Redirect to dashboard heavily preferred after login
+        router.push("/"); // Redirect to dashboard heavily preferred after login
         router.refresh();
       }
     } catch (err) {
