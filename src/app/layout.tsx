@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FlowLive",
+  title: "goLive",
   description: "Live Streaming Platform",
 };
 

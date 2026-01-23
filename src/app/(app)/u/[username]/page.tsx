@@ -3,22 +3,19 @@ import Image from "next/image";
 import Link from "next/link";
 import { Edit, Video } from "lucide-react";
 import { FollowButton } from "@/components/user/follow-button";
+import { getUserProfile } from "@/lib/user-service";
 
 export default async function ProfilePage({ params }: { params: Promise<{ username: string }> }) {
     const { username } = await params;
-    try {
-        const response = await fetch(`/api/user/profile?username=${encodeURIComponent(username)}`, {
-            cache: "no-store",
-        });
+    
+    // Fetch profile data directly (server-side)
+    const profile = await getUserProfile(username);
 
-        if (!response.ok) {
-            if (response.status === 404) {
-                return notFound();
-            }
-            throw new Error("Failed to fetch profile");
-        }
+    if (!profile) {
+        return notFound();
+    }
 
-        const { user, isOwner, streams, isFollowing, followerCount } = await response.json();
+    const { user, isOwner, streams, isFollowing, followerCount } = profile;
 
         return (
             <div className="min-h-screen bg-black text-white">
@@ -140,9 +137,6 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
                 </div>
             </div>
         );
-    } catch (error) {
-        console.error("Error loading profile:", error);
-        return notFound();
-    }
+    // No catch needed for standard errors, Next.js Error Boundary catches them.
 }
 

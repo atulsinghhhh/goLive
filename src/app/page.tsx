@@ -63,47 +63,49 @@ export default function HomePage() {
     const featuredStream = streams.length > 0 ? streams[0] : null;
 
     return (
-        <div className="min-h-screen bg-background text-foreground flex">
-            {/* Sidebar */}
+        <div className="min-h-screen bg-background text-foreground flex font-sans selection:bg-primary/30">
+            {/* Sidebar (Recommended) */}
             <RecommendedSidebar streams={streams} />
 
-            <div className="flex-1 flex flex-col min-w-0">
-                {/* Navbar */}
-                <nav className="h-16 border-b border-border flex items-center px-6 justify-between bg-background sticky top-0 z-50">
-                    <Link href="/" className="text-2xl font-bold bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent">
-                        FlowLive
+            <div className="flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out">
+                {/* Navbar - Glassmorphic & Minimal */}
+                <nav className="h-16 border-b border-border/40 flex items-center px-6 justify-between bg-background/80 backdrop-blur-md sticky top-0 z-50">
+                    <Link href="/" className="text-2xl font-bold bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent transition-opacity hover:opacity-80">
+                        goLive
                     </Link>
-                    <div className="flex gap-4 items-center">
-                        <div className="hidden md:block relative w-64 lg:w-80">
-                                <form action="/search">
-                                    <input 
+                    
+                    <div className="flex gap-4 items-center flex-1 justify-center max-w-2xl mx-auto px-4">
+                        <div className="hidden md:block relative w-full max-w-md">
+                            <form action="/search">
+                                <input 
                                     name="q"
                                     type="text" 
-                                    placeholder="Search..." 
-                                    className="w-full bg-input border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-primary transition-colors text-foreground placeholder:text-muted-foreground"
-                                    />
-                                </form>
-                            </div>
+                                    placeholder="Search channels..." 
+                                    className="w-full bg-input/50 border border-border/50 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all text-foreground placeholder:text-muted-foreground/70"
+                                />
+                            </form>
                         </div>
+                    </div>
+
                     <div className="flex gap-3 items-center">
                         {session ? (
                             <>
-                                <Link href="/dashboard" className="px-4 py-2 text-sm font-bold text-muted-foreground hover:text-primary transition-colors flex items-center gap-2">
-                                    <LayoutDashboard size={16} />
-                                    <span>Dashboard</span>
+                                <Link href="/dashboard" className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 rounded-xl hover:bg-primary/5">
+                                    <LayoutDashboard size={18} />
+                                    <span className="hidden sm:inline">Dashboard</span>
                                 </Link>
                                 <button 
                                     onClick={() => signOut()}
-                                    className="px-4 py-2 text-sm font-bold bg-destructive/10 text-destructive rounded-lg hover:bg-destructive/20 transition-colors flex items-center gap-2"
+                                    className="px-4 py-2 text-sm font-medium bg-destructive/10 text-destructive rounded-xl hover:bg-destructive/20 transition-colors flex items-center gap-2"
                                 >
-                                    <LogOut size={16} />
-                                    <span>Log Out</span>
+                                    <LogOut size={18} />
+                                    <span className="hidden sm:inline">Log Out</span>
                                 </button>
-                                <Link href={`/u/${session.user?.username}`} className="w-8 h-8 rounded-full bg-primary overflow-hidden border border-border relative">
+                                <Link href={`/u/${session.user?.username}`} className="w-9 h-9 rounded-full bg-primary/20 overflow-hidden border border-border/50 relative hover:ring-2 hover:ring-primary/50 transition-all">
                                     {session.user?.image ? (
-                                        <Image src={session.user.image} alt="User" width={32} height={32} className="w-full h-full object-cover" />
+                                        <Image src={session.user.image} alt="User" width={36} height={36} className="w-full h-full object-cover" />
                                     ) : (
-                                        <div className="flex items-center justify-center w-full h-full font-bold text-white text-xs">
+                                        <div className="flex items-center justify-center w-full h-full font-bold text-primary text-sm">
                                             {session.user?.username?.[0]?.toUpperCase()}
                                         </div>
                                     )}
@@ -111,10 +113,10 @@ export default function HomePage() {
                             </>
                         ) : (
                             <>
-                                <Link href="/login" className="px-4 py-2 text-sm font-bold text-muted-foreground hover:text-foreground transition-colors">
+                                <Link href="/login" className="px-5 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors hover:bg-white/5 rounded-xl">
                                     Log In
                                 </Link>
-                                <Link href="/signup" className="px-4 py-2 text-sm font-bold bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20">
+                                <Link href="/signup" className="px-5 py-2 text-sm font-bold bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 hover:scale-105 transition-all shadow-lg shadow-primary/25">
                                     Get Started
                                 </Link>
                             </>
@@ -123,31 +125,31 @@ export default function HomePage() {
                 </nav>
 
                 {/* Main Content */}
-                <main className="p-6 md:p-8 overflow-y-auto flex-1 scrollbar-hide">
-                    <div className="mb-10">
+                <main className="p-6 md:p-8 overflow-y-auto flex-1 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
+                    <div className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
                         <HeroCarousel stream={featuredStream} />
                     </div>
 
                     <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                            <span className="text-purple-500">Live</span> Channels
+                        <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+                            <span className="text-primary animate-pulse">Live</span> Channels
                         </h2>
                         <div className="flex gap-2">
-                             <button className="px-3 py-1 bg-zinc-800 rounded-lg text-xs font-bold text-zinc-400 hover:text-white transition-colors">Categories</button>
-                             <button className="px-3 py-1 bg-zinc-800 rounded-lg text-xs font-bold text-zinc-400 hover:text-white transition-colors">Live Channels</button>
+                             <button className="px-4 py-1.5 bg-card border border-border/50 rounded-xl text-xs font-bold text-muted-foreground hover:text-foreground hover:border-primary/50 transition-all">Categories</button>
+                             <button className="px-4 py-1.5 bg-primary/10 border border-primary/20 rounded-xl text-xs font-bold text-primary hover:bg-primary/20 transition-all shadow-sm shadow-primary/5">Live Channels</button>
                         </div>
                     </div>
 
                     {loading && (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             {[1, 2, 3, 4].map(i => (
-                                <div key={i} className="animate-pulse">
-                                    <div className="aspect-video bg-zinc-900 rounded-xl mb-3"></div>
+                                <div key={i} className="animate-pulse flex flex-col gap-3">
+                                    <div className="aspect-video bg-zinc-900/50 rounded-xl"></div>
                                     <div className="flex gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-zinc-900 shrink-0"></div>
+                                        <div className="w-10 h-10 rounded-full bg-zinc-900/50 shrink-0"></div>
                                         <div className="flex-1 space-y-2">
-                                            <div className="h-4 bg-zinc-900 rounded w-3/4"></div>
-                                            <div className="h-3 bg-zinc-900 rounded w-1/2"></div>
+                                            <div className="h-4 bg-zinc-900/50 rounded w-3/4"></div>
+                                            <div className="h-3 bg-zinc-900/50 rounded w-1/2"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -156,13 +158,13 @@ export default function HomePage() {
                     )}
 
                     {!loading && streams.length === 0 && (
-                        <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-zinc-800 rounded-xl bg-zinc-900/50">
-                            <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mb-4">
-                                <Loader2 className="animate-spin opacity-50" />
+                        <div className="flex flex-col items-center justify-center py-24 text-center border border-dashed border-border/50 rounded-2xl bg-card/30">
+                            <div className="w-20 h-20 bg-muted/30 rounded-full flex items-center justify-center mb-6 text-primary">
+                                <Loader2 className="animate-spin opacity-50" size={32} />
                             </div>
-                            <h3 className="text-xl font-bold text-zinc-300 mb-2">No channels live right now</h3>
-                            <p className="text-zinc-500 mb-6 max-w-sm">Be the first to start streaming and build your community!</p>
-                            <Link href="/dashboard" className="px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-lg transition-colors">
+                            <h3 className="text-xl font-bold text-foreground mb-2">No channels live right now</h3>
+                            <p className="text-muted-foreground mb-8 max-w-sm">Be the first to start streaming and build your community!</p>
+                            <Link href="/dashboard" className="px-8 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl transition-all shadow-lg shadow-primary/20 hover:scale-105">
                                 Start Auto Streaming
                             </Link>
                         </div>

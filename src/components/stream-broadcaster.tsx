@@ -161,37 +161,39 @@ export const StreamBroadcaster = ({ channelName }: { channelName: string }) => {
   };
 
   return (
-    <div className="relative w-full h-full bg-black rounded-xl overflow-hidden shadow-2xl border border-zinc-800 group">
+    <div className="relative w-full h-full bg-black rounded-2xl overflow-hidden shadow-2xl border border-border/50 group ring-1 ring-white/5 mx-auto">
         <div ref={videoRef} className="w-full h-full" />
         
         {/* Overlays */}
-        <div className="absolute top-4 left-4 flex items-center gap-2">
-            <div className="bg-red-600 px-3 py-1 rounded-full text-white text-xs font-bold animate-pulse">
+        <div className="absolute top-6 left-6 flex items-center gap-3">
+            <div className="bg-destructive text-destructive-foreground px-3 py-1 rounded-lg text-xs font-bold animate-pulse shadow-sm shadow-destructive/20">
                 LIVE
             </div>
-            <div className="bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-white text-xs font-medium flex items-center gap-2">
-                <Users size={12} /> {viewerCount}
+            <div className="bg-black/40 backdrop-blur-md border border-white/5 px-3 py-1 rounded-lg text-white text-xs font-medium flex items-center gap-2">
+                <Users size={14} className="text-primary" /> {viewerCount}
             </div>
         </div>
 
-        {/* Controls Bar */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 px-6 py-3 bg-black/80 backdrop-blur-lg rounded-full border border-zinc-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        {/* Controls Bar - Floating Island */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 px-6 py-3 bg-black/60 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
             <button 
                 onClick={toggleMic}
-                className={`p-3 rounded-full transition-colors ${micOn ? 'bg-zinc-800 hover:bg-zinc-700 text-white' : 'bg-red-500/20 text-red-500 hover:bg-red-500/30'}`}
+                className={`p-3 rounded-xl transition-all duration-200 ${micOn ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-destructive/20 text-destructive hover:bg-destructive/30'}`}
+                title={micOn ? "Mute Mic" : "Unmute Mic"}
             >
                 {micOn ? <Mic size={20} /> : <MicOff size={20} />}
             </button>
             <button 
                 onClick={toggleCamera}
-                className={`p-3 rounded-full transition-colors ${cameraOn ? 'bg-zinc-800 hover:bg-zinc-700 text-white' : 'bg-red-500/20 text-red-500 hover:bg-red-500/30'}`}
+                className={`p-3 rounded-xl transition-all duration-200 ${cameraOn ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-destructive/20 text-destructive hover:bg-destructive/30'}`}
+                title={cameraOn ? "Turn Camera Off" : "Turn Camera On"}
             >
                  {cameraOn ? <Video size={20} /> : <VideoOff size={20} />}
             </button>
-            <div className="w-px h-8 bg-zinc-700 mx-2"></div>
+            <div className="w-px h-8 bg-white/10 mx-2"></div>
             <button 
                 onClick={endStream}
-                className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full font-bold text-sm flex items-center gap-2 transition-colors"
+                className="bg-destructive hover:bg-destructive/90 text-destructive-foreground px-6 py-2 rounded-xl font-bold text-sm flex items-center gap-2 transition-all hover:scale-105 shadow-lg shadow-destructive/20"
             >
                 <PhoneOff size={16} /> End Stream
             </button>

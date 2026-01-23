@@ -1,34 +1,36 @@
 @import "tailwindcss";
 
 :root {
-  /* FlowLive Palette */
-  --background: #0b0e14; /* Deep Charcoal */
-  --foreground: #e5e7eb; /* Text Primary: Soft White */
+  /* goLive Design System - Dark Mode First */
+  --background: #09090b; /* Rich Black */
+  --foreground: #f4f4f5; /* Zinc 100 */
 
-  --card: #111827; /* Surface / Cards: Dark Slate */
-  --card-foreground: #e5e7eb;
+  --card: #18181b; /* Zinc 900 */
+  --card-foreground: #f4f4f5;
 
-  --popover: #111827;
-  --popover-foreground: #e5e7eb;
+  --popover: #18181b;
+  --popover-foreground: #f4f4f5;
 
-  --primary: #7c5cff; /* electric violet */
+  --primary: #6366f1; /* Indigo 500 */
   --primary-foreground: #ffffff;
 
-  --secondary: #22d3ee; /* Cyan Glow */
-  --secondary-foreground: #0b0e14;
+  --secondary: #06b6d4; /* Cyan 500 */
+  --secondary-foreground: #ffffff;
 
-  --muted: #1f2933; /* Border: Subtle Gray/Darker */
-  --muted-foreground: #9ca3af; /* Text Muted: Cool Gray */
+  --muted: #27272a; /* Zinc 800 */
+  --muted-foreground: #a1a1aa; /* Zinc 400 */
 
-  --accent: #7c5cff;
-  --accent-foreground: #ffffff;
+  --accent: #27272a;
+  --accent-foreground: #f4f4f5;
 
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
 
-  --border: #1f2933;
-  --input: #1f2933;
-  --ring: #7c5cff;
+  --border: #27272a;
+  --input: #27272a; /* Zinc 800 for inputs */
+  --ring: #6366f1;
+
+  --radius: 1rem; /* 16px */
 }
 
 @theme inline {
@@ -51,6 +53,11 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
