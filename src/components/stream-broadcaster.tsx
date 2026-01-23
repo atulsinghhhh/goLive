@@ -114,6 +114,28 @@ export const StreamBroadcaster = ({ channelName }: { channelName: string }) => {
       }
   };
 
+  // Socket for Stream End notification
+  const [socket, setSocket] = useState<any>(null); // Quick type fix, ideally import Socket
+
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    
+    let socketInstance: any;
+    const initSocket = async () => {
+        const { io } = await import("socket.io-client");
+        socketInstance = io("http://localhost:3001", {
+            auth: { userId: session.user.id }
+        });
+        setSocket(socketInstance);
+    };
+
+    initSocket();
+
+    return () => { 
+        if (socketInstance) socketInstance.disconnect(); 
+    }
+  }, [session?.user?.id]);
+
   const endStream = async () => {
       try {
           // Get stream ID first to update DB
@@ -121,6 +143,12 @@ export const StreamBroadcaster = ({ channelName }: { channelName: string }) => {
           const data = await resp.json();
           
           if (data.stream?._id) {
+               // 1. Notify server via socket to delete chats and notify viewers
+               if (socket) {
+                   socket.emit("stream:end", { streamId: data.stream._id });
+               }
+
+               // 2. Update DB status
                await fetch("/api/stream", {
                   method: "PUT",
                   body: JSON.stringify({ streamId: data.stream._id, isLive: false })

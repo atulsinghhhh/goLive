@@ -53,7 +53,7 @@ export const StreamPlayer = ({ channelName }: { channelName: string }) => {
         if (!data.token) throw new Error("Failed to get token");
 
         console.log("Joining channel:", channelName, "with UID:", data.uid);
-        await client.setClientRole("audience"); // Ensure audience role
+        await client.setClientRole("audience"); 
         await client.join(process.env.NEXT_PUBLIC_APP_ID, channelName, data.token, data.uid);
         console.log("Joined channel successfully");
         setIsConnected(true);

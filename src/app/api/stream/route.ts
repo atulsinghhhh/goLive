@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { title, category, agoraChannel } = await request.json();
+    const { title, category, agoraChannel, thumbnailUrl } = await request.json();
 
     if (!title || !category || !agoraChannel) {
         return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -66,14 +66,20 @@ export async function POST(request: NextRequest) {
 
     // Use findOneAndUpdate with upsert to reuse the existing document
     // distinct index on agoraChannel ensures we match the correct one
-    const stream = await Stream.findOneAndUpdate(
-      { agoraChannel },
-      {
+    const updateData: any = {
         streamerId: session.user.id,
         title,
         category,
         isLive: true,
-      },
+    };
+
+    if (thumbnailUrl) {
+        updateData.thumbnailUrl = thumbnailUrl;
+    }
+
+    const stream = await Stream.findOneAndUpdate(
+      { agoraChannel },
+      updateData,
       { upsert: true, new: true }
     );
 

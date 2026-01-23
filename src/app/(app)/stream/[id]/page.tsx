@@ -21,6 +21,34 @@ export default function StreamPage({ params }: { params: Promise<{ id: string }>
         (typeof streamInfo.streamerId === 'object' && session.user.id === streamInfo.streamerId._id)
     );
 
+    // Socket for Viewer Redirect
+    useEffect(() => {
+        if (!streamInfo?._id || !session?.user?.id) return;
+
+        let socket: any;
+
+        const initSocket = async () => {
+             const { io } = await import("socket.io-client");
+             socket = io("http://localhost:3001", {
+                auth: { userId: session.user.id }
+             });
+
+             socket.on("connect", () => {
+                 socket.emit("join:stream", { streamId: streamInfo._id });
+             });
+
+             socket.on("stream:ended", () => {
+                 window.location.href = "/"; // Force full reload/redirect to home
+             });
+        };
+
+        initSocket();
+
+        return () => {
+            if (socket) socket.disconnect();
+        }
+    }, [streamInfo?._id, session?.user?.id]);
+
     useEffect(() => {
         const fetchInfo = async () => {
             try {

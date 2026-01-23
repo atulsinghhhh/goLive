@@ -52,7 +52,7 @@ export default function HomePage() {
             }
         };
 
-        console.log("username: ", session?.user?.username)
+        // console.log("username: ", session?.user?.username)
         fetchStreams();
         const interval = setInterval(fetchStreams, 10000); 
         return () => clearInterval(interval);

@@ -120,6 +120,24 @@ io.on("connection", (socket) => {
       }
   });
 
+  socket.on("stream:end", async ({ streamId }) => {
+      try {
+          const stream = await Stream.findById(streamId);
+          if (stream && stream.streamerId.toString() === socket.data.user.id) {
+              // 1. Delete all chats for this stream
+              await Chat.deleteMany({ streamId });
+              
+              // 2. Notify all clients in the room
+              io.to(streamId).emit("stream:ended");
+
+              // 3. Optional: Clear the room?
+              io.in(streamId).disconnectSockets();
+          }
+      } catch (e) {
+          console.error("End stream error", e);
+      }
+  });
+
 
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);

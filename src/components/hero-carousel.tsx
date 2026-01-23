@@ -4,7 +4,6 @@ import { Play, Volume2, VolumeX } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { motion } from "framer-motion";
 
 interface Stream {
     _id: string;

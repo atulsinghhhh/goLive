@@ -12,6 +12,7 @@ export async function PUT(req: Request) {
         }
 
         const { thumbnailUrl } = await req.json();
+        console.log("thumbnailUrl: ", thumbnailUrl)
 
         if (!thumbnailUrl) {
             return NextResponse.json({ error: "Missing thumbnail URL" }, { status: 400 });
@@ -27,6 +28,7 @@ export async function PUT(req: Request) {
             { thumbnailUrl },
             { new: true, upsert: true } // Create if doesn't exist? Ideally stream exists if they are streamer.
         );
+        console.log("stream: ", stream)
 
         return NextResponse.json({ stream }, { status: 200 });
 

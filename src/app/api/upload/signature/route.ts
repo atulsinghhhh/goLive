@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
         // Generate the signature
         const signature = cloudinary.utils.api_sign_request({
             timestamp: timestamp,
-            folder: "twitch-clone", // Optional: organize uploads
+            folder: "twitch-clone", 
         }, process.env.CLOUDINARY_API_SECRET!);
 
         return NextResponse.json({ 

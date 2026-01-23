@@ -19,7 +19,8 @@ export default function DashboardClient({ user }: DashboardClientProps) {
   const [mounted, setMounted] = useState(false);
   const [streamData, setStreamData] = useState({
     title: `${user.username}'s Stream`,
-    category: "Just Chatting"
+    category: "Just Chatting",
+    thumbnailUrl: ""
   });
 
   const [stats, setStats] = useState({
@@ -57,6 +58,7 @@ export default function DashboardClient({ user }: DashboardClientProps) {
         body: JSON.stringify({
           title: streamData.title,
           category: streamData.category,
+          thumbnailUrl: streamData.thumbnailUrl,
           agoraChannel: user.username // Using username as channel ID for simplicity
         }),
       });
@@ -144,7 +146,7 @@ export default function DashboardClient({ user }: DashboardClientProps) {
             <StreamSetup 
                 initialTitle={streamData.title}
                 initialCategory={streamData.category}
-                onSave={(title, category) => setStreamData({ title, category })}
+                onSave={(title, category, thumbnailUrl = "") => setStreamData({ title, category, thumbnailUrl })}
             />
             
             {/* Action Bar */}
