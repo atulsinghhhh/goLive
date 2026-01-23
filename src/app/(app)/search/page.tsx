@@ -1,5 +1,4 @@
 
-import { auth } from "@/lib/auth";
 import { Stream } from "@/model/stream.model";
 import { User } from "@/model/user.model";
 import dbConnect from "@/lib/db";
@@ -44,7 +43,7 @@ export default async function SearchPage({
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-10">
       <h1 className="text-2xl font-bold text-foreground">
-        Search Results for <span className="text-primary">"{q}"</span>
+        Search Results for <span className="text-primary">&quot;{q}&quot;</span>
       </h1>
 
       {/* Users Section */}
@@ -52,7 +51,7 @@ export default async function SearchPage({
           <section>
               <h2 className="text-lg font-bold text-muted-foreground mb-4 uppercase tracking-wider">Channels</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {users.map((user: any) => (
+                  {users.map((user: { _id: string; avatar?: string; username: string; name?: string }) => (
                       <Link 
                         key={user._id.toString()} 
                         href={`/u/${user.username}`}
@@ -82,8 +81,7 @@ export default async function SearchPage({
           <h2 className="text-lg font-bold text-muted-foreground mb-4 uppercase tracking-wider">Live Streams</h2>
           {streams.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {streams.map((stream: any) => (
-                    //   @ts-ignore - StreamCard expects specific type but we're passing lean object
+                  {streams.map((stream: { _id: { toString(): string }; title: string; category: string; agoraChannel: string; viewerCount: number; thumbnailUrl?: string; streamerId: { username: string; avatar?: string } }) => (
                       <StreamCard key={stream._id.toString()} stream={{
                           ...stream, 
                           _id: stream._id.toString(),
@@ -95,7 +93,7 @@ export default async function SearchPage({
                   ))}
               </div>
           ) : (
-              <p className="text-muted-foreground italic">No live streams found matching "{q}".</p>
+              <p className="text-muted-foreground italic">No live streams found matching &quot;{q}&quot;.</p>
           )}
       </section>
     </div>

@@ -52,7 +52,7 @@ export async function GET(req: NextRequest){
         const streamId = searchParams.get("streamId");
 
         if(!streamId){
-             return NextResponse.json({ error: "Missing streamId" }, { status: 400 });
+            return NextResponse.json({ error: "Missing streamId" }, { status: 400 });
         }
 
         const chats = await Chat.find({ streamId })
@@ -60,7 +60,7 @@ export async function GET(req: NextRequest){
             .populate("userId", "username image")
             .lean();
 
-        const formattedChats = chats.map((chat: any) => ({
+        const formattedChats = chats.map((chat: { _id: string; createdAt: string; userId: { username: string; image: string }; message: string; streamId: string }) => ({
             ...chat,
             id: chat._id.toString(),
             _id: undefined 

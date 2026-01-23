@@ -13,8 +13,8 @@ export default function StreamPage({ params }: { params: Promise<{ id: string }>
     const { data: session } = useSession();
     
     // Stream Info State
-    const [streamInfo, setStreamInfo] = useState<{ _id: string, streamerId: string | any, title: string, category: string, viewerCount: number } | null>(null);
-    const [liveChannels, setLiveChannels] = useState<any[]>([]);
+    const [streamInfo, setStreamInfo] = useState<{ _id: string; streamerId: string | { _id: string; username: string }; title: string; category: string; viewerCount: number } | null>(null);
+    const [liveChannels, setLiveChannels] = useState<Array<{ agoraChannel: string; _id: string; streamerId: { username: string }; category: string; viewerCount: number }>>([]);
     
     const isStreamer = session?.user?.id && streamInfo?.streamerId && (
         (typeof streamInfo.streamerId === 'string' && session.user.id === streamInfo.streamerId) ||
@@ -25,21 +25,21 @@ export default function StreamPage({ params }: { params: Promise<{ id: string }>
     useEffect(() => {
         if (!streamInfo?._id || !session?.user?.id) return;
 
-        let socket: any;
+        let socket: { on: (event: string, callback: (data: unknown) => void) => void; emit: (event: string, data: unknown) => void; disconnect: () => void };
 
         const initSocket = async () => {
-             const { io } = await import("socket.io-client");
-             socket = io("http://localhost:3001", {
-                auth: { userId: session.user.id }
-             });
+            const { io } = await import("socket.io-client");
+            socket = io("http://localhost:3001", {
+                auth: { userId: session?.user?.id }
+            });
 
-             socket.on("connect", () => {
-                 socket.emit("join:stream", { streamId: streamInfo._id });
-             });
+            socket.on("connect", () => {
+                socket.emit("join:stream", { streamId: streamInfo._id });
+            });
 
-             socket.on("stream:ended", () => {
-                 window.location.href = "/"; // Force full reload/redirect to home
-             });
+            socket.on("stream:ended", () => {
+                window.location.href = "/"; // Force full reload/redirect to home
+            });
         };
 
         initSocket();
@@ -99,7 +99,7 @@ export default function StreamPage({ params }: { params: Promise<{ id: string }>
                             {liveChannels.length === 0 ? (
                                 <p className="text-xs text-zinc-600 italic">No other live channels.</p>
                             ) : (
-                                liveChannels.map((stream) => (
+                                liveChannels.map((stream: { agoraChannel: string; _id: string; streamerId: { username: string }; category: string; viewerCount: number }) => (
                                     <a href={`/stream/${stream.agoraChannel}`} key={stream._id} className={`flex items-center gap-3 p-2 rounded hover:bg-zinc-900 transition-colors ${stream.agoraChannel === channelName ? 'bg-zinc-900' : ''}`}>
                                         <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-xs font-bold shrink-0">
                                             {stream.streamerId.username[0]}
@@ -185,7 +185,7 @@ export default function StreamPage({ params }: { params: Promise<{ id: string }>
                         <div className="h-full border-l border-zinc-800 bg-zinc-950/50 backdrop-blur-sm">
                             <StreamChat 
                                 streamId={streamInfo._id} 
-                                streamerId={typeof streamInfo.streamerId === 'object' ? (streamInfo.streamerId as any)._id : streamInfo.streamerId} 
+                                streamerId={typeof streamInfo.streamerId === 'object' ? streamInfo.streamerId._id : streamInfo.streamerId} 
                             />
                         </div>
                     ) : (

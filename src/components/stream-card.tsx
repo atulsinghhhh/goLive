@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 interface StreamCardProps {
     stream: {
@@ -23,10 +24,11 @@ export const StreamCard = ({ stream }: StreamCardProps) => {
         <div className="relative aspect-video rounded-lg overflow-hidden bg-muted mb-2 transition-transform group-hover:translate-y-[-4px] group-hover:shadow-xl group-hover:shadow-primary/20 border border-border group-hover:border-primary/50">
            {/* Thumbnail Image or Gradient Fallback */}
            {stream.thumbnailUrl ? (
-               <img 
+               <Image 
                    src={stream.thumbnailUrl} 
                    alt={stream.title} 
-                   className="absolute inset-0 w-full h-full object-cover" 
+                   fill
+                   className="object-cover" 
                />
            ) : (
                <>
@@ -55,7 +57,7 @@ export const StreamCard = ({ stream }: StreamCardProps) => {
         <div className="flex gap-3">
              <div className="w-10 h-10 rounded-full bg-muted shrink-0 relative overflow-hidden flex items-center justify-center border border-border">
                  {stream.streamerId?.avatar ? (
-                     <img src={stream.streamerId.avatar} alt={stream.streamerId.username} className="object-cover w-full h-full" />
+                     <Image src={stream.streamerId.avatar} alt={stream.streamerId.username} fill className="object-cover" />
                  ) : (
                      <div className="text-muted-foreground font-bold uppercase text-sm">
                         {stream.streamerId?.username?.[0] || "?"}

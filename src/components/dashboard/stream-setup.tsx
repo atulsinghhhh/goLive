@@ -3,6 +3,7 @@
 
 import { motion } from "framer-motion";
 import { useState } from "react";
+import Image from "next/image";
 
 interface StreamSetupProps {
   initialTitle?: string;
@@ -106,7 +107,7 @@ export const StreamSetup = ({ initialTitle = "", initialCategory = "Just Chattin
             <div className={`border-2 border-dashed border-border rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors ${thumbnailUrl ? 'border-solid border-primary' : ''}`}>
                 {thumbnailUrl ? (
                     <div className="relative w-full aspect-video rounded-md overflow-hidden group">
-                        <img src={thumbnailUrl} alt="Thumbnail" className="w-full h-full object-cover" />
+                        <Image src={thumbnailUrl} alt="Thumbnail" fill className="object-cover" />
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                             <p className="text-white text-xs font-bold">Click to Change</p>
                         </div>

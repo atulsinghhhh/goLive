@@ -19,14 +19,10 @@ export async function PUT(req: Request) {
         }
 
         await dbConnect();
-
-        // Update user's stream
-        // Note: Assuming one stream per user. We might need to find by streamerId unique constraint.
-        // Stream model has streamerId.
         const stream = await Stream.findOneAndUpdate(
             { streamerId: session.user.id },
             { thumbnailUrl },
-            { new: true, upsert: true } // Create if doesn't exist? Ideally stream exists if they are streamer.
+            { new: true, upsert: true } 
         );
         console.log("stream: ", stream)
 

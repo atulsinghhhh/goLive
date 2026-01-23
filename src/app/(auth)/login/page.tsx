@@ -31,10 +31,10 @@ export default function LoginPage() {
       if (result?.error) {
         setError("Invalid email or password");
       } else {
-        router.push("/"); // Redirect to dashboard heavily preferred after login
+        router.push("/"); 
         router.refresh();
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred");
     } finally {
       setLoading(false);
@@ -101,7 +101,7 @@ export default function LoginPage() {
         </form>
 
         <p className="mt-8 text-center text-sm text-muted-foreground">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link href="/signup" className="text-primary hover:text-primary/80 font-bold hover:underline transition-all">
             Sign up now
           </Link>

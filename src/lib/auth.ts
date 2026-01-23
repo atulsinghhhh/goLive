@@ -1,90 +1,88 @@
 import NextAuth from "next-auth"
-import { MongoDBAdapter } from "@auth/mongodb-adapter"
 import Credentials from "next-auth/providers/credentials"
-import { clientPromise } from "@/lib/db"
-import { User } from "@/model/user.model"
-import dbConnect from "@/lib/db"
 import bcrypt from "bcryptjs"
+import type { Session } from "next-auth"
+import type { AdapterUser } from "next-auth/adapters"
+import type { JWT } from "next-auth/jwt"
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: MongoDBAdapter(clientPromise),
-  session: { strategy: "jwt" },
+import dbConnect from "@/lib/db"
+import { User } from "@/model/user.model"
+
+export const { handlers, auth, signIn, signOut } = NextAuth({
+  session: {
+    strategy: "jwt",
+  },
+
   providers: [
     Credentials({
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
       },
-      authorize: async (credentials) => {
+
+      async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          return null;
+          return null
         }
 
-        await dbConnect();
-        
-        try {
-            const user = await User.findOne({ email: credentials.email });
-            
-            if (!user) {
-                return null;
-            }
+        await dbConnect()
 
-            const isValid = await bcrypt.compare(
-                credentials.password as string, 
-                user.password
-            );
+        const user = await User.findOne({ email: credentials.email })
+        if (!user) return null
 
-            if (!isValid) {
-                return null;
-            }
+        const isValid = await bcrypt.compare(
+          credentials.password,
+          user.password
+        )
 
-            return {
-                id: user._id.toString(),
-                email: user.email,
-                username: user.username,
-                name: user.username,
-                image: user.avatar
-            };
-        } catch (error) {
-            console.error("Auth error:", error);
-            return null;
+        if (!isValid) return null
+
+        return {
+          id: user._id.toString(),
+          email: user.email,
+          name: user.username,
+          username: user.username,
+          image: user.avatar ?? null,
+          bio: user.bio ?? null,
         }
-      }
-    })
+      },
+    }),
   ],
-  callbacks: {
-    async jwt({ token, user, trigger, session }) {
-      if (user) {
-        token.sub = user.id;
-        token.name = user.name;
-        token.username = user.username;
-        token.picture = user.image;
-        token.bio = (user as any).bio;
-      }
-      
-      if (trigger === "update" && session?.user) {
-          token.name = session.user.name;
-          token.username = session.user.username;
-          token.picture = session.user.image;
-          // token.bio = session.user.bio; // session.user might not have bio unless typed?
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (token && session.user) {
-        session.user.id = token.sub as string;
-        session.user.name = token.name;
-        session.user.username=token.username
-        session.user.image = token.picture;
-        session.user.bio = token.bio;
-      }
-      return session;
-    }
-  },
-  pages: {
-    signIn: '/login', 
-    error: '/login',
-  }
 
+  callbacks: {
+    async jwt({ token, user, trigger, session }: { token: JWT & { id?: string; username?: string | null; bio?: string | null; picture?: string | null }; user?: AdapterUser & { username?: string | null; bio?: string | null; image?: string | null }; trigger?: "signIn" | "signUp" | "update"; session?: Session | null }) {
+      if (user) {
+        token.id = user.id
+        token.username = user.username ?? null
+        token.bio = user.bio ?? null
+        token.picture = user.image ?? null
+      }
+
+      if (trigger === "update" && session?.user) {
+        token.name = session.user.name
+        token.username = session.user.username
+        token.bio = session.user.bio
+        token.picture = session.user.image
+      }
+
+      return token
+    },
+
+    async session({ session, token }: { session: Session & { user?: { id?: string; username?: string | null; bio?: string | null; image?: string | null } }; token: JWT & { id?: string; username?: string | null; bio?: string | null; picture?: string | null } }) {
+      if (session.user) {
+        session.user.id = token.id as string | undefined
+        session.user.username = token.username ?? undefined
+        session.user.bio = token.bio ?? undefined
+        session.user.image = token.picture ?? undefined
+      }
+
+      return session
+    },
+  },
+
+  pages: {
+    signIn: "/login",
+    error: "/login",
+  },
 })

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { StreamCard } from "@/components/stream-card";
 import { RecommendedSidebar } from "@/components/recommended-sidebar";
 import { HeroCarousel } from "@/components/hero-carousel";
@@ -24,10 +25,11 @@ export default function HomePage() {
     const { data: session, status } = useSession();
     const [streams, setStreams] = useState<StreamType[]>([]);
     const [loading, setLoading] = useState(true);
+
     
     useEffect(() => {
         if (status === 'authenticated') {
-            console.log("Session Username:", session?.user?.username);
+            console.log("Session Username:", session?.user?.email);
         } else if (status === 'loading') {
             console.log("Session Loading...");
         } else {
@@ -72,17 +74,17 @@ export default function HomePage() {
                         FlowLive
                     </Link>
                     <div className="flex gap-4 items-center">
-                         <div className="hidden md:block relative w-64 lg:w-80">
-                             <form action="/search">
-                                 <input 
+                        <div className="hidden md:block relative w-64 lg:w-80">
+                                <form action="/search">
+                                    <input 
                                     name="q"
                                     type="text" 
                                     placeholder="Search..." 
                                     className="w-full bg-input border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-primary transition-colors text-foreground placeholder:text-muted-foreground"
-                                 />
-                             </form>
-                         </div>
-                    </div>
+                                    />
+                                </form>
+                            </div>
+                        </div>
                     <div className="flex gap-3 items-center">
                         {session ? (
                             <>
@@ -99,7 +101,7 @@ export default function HomePage() {
                                 </button>
                                 <Link href={`/u/${session.user?.username}`} className="w-8 h-8 rounded-full bg-primary overflow-hidden border border-border relative">
                                     {session.user?.image ? (
-                                        <img src={session.user.image} alt="User" className="w-full h-full object-cover" />
+                                        <Image src={session.user.image} alt="User" width={32} height={32} className="w-full h-full object-cover" />
                                     ) : (
                                         <div className="flex items-center justify-center w-full h-full font-bold text-white text-xs">
                                             {session.user?.username?.[0]?.toUpperCase()}

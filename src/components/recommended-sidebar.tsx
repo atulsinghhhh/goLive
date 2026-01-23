@@ -1,6 +1,6 @@
 "use client";
 
-import { User, Video } from "lucide-react";
+import { Video } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 

@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
 
     // Use findOneAndUpdate with upsert to reuse the existing document
     // distinct index on agoraChannel ensures we match the correct one
-    const updateData: any = {
+    const updateData: { streamerId: string; title: string; category: string; isLive: boolean; thumbnailUrl?: string } = {
         streamerId: session.user.id,
         title,
         category,

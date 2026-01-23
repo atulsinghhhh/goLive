@@ -6,12 +6,14 @@ if (!process.env.MONGODB_URI) {
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
-// Global cache to prevent multiple connections in dev mode
-let cached = (global as any).mongoose;
+type MongooseCache = { conn: typeof mongoose | null; promise: Promise<typeof mongoose> | null };
+const globalWithMongoose = global as typeof global & { mongoose?: MongooseCache };
 
-if (!cached) {
-  cached = (global as any).mongoose = { conn: null, promise: null };
+if (!globalWithMongoose.mongoose) {
+  globalWithMongoose.mongoose = { conn: null, promise: null };
 }
+
+const cached = globalWithMongoose.mongoose;
 
 async function dbConnect() {
   if (cached.conn) {
@@ -40,5 +42,3 @@ async function dbConnect() {
 
 export default dbConnect;
 
-// For NextAuth adapter which requires a native client promise
-export const clientPromise = dbConnect().then(m => m.connection.getClient());

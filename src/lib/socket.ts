@@ -1,10 +1,6 @@
 import http from "http";
 import { Server } from "socket.io";
-import dotenv from "dotenv";
 
-// console.log("Loading .env...");
-// dotenv.config({ path: ".env.local" });
-// console.log("MONGODB_URI:", process.env.MONGODB_URI ? "Found" : "Missing");
 
 import { chatMessageSchema } from "./schema/chat.schema";
 import { Chat } from "../model/chat.model";
@@ -43,7 +39,7 @@ io.use(async (socket, next) => {
       image: user.avatar
     };
     next();
-  } catch (error) {
+  } catch {
     next(new Error("Internal Server Error"));
   }
 });

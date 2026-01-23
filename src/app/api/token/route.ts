@@ -6,8 +6,6 @@ export async function GET(request: NextRequest) {
   const channelName = searchParams.get('channelName');
   const role = request.nextUrl.searchParams.get('role') || 'publisher'; 
   
-  // Use a random UID instead of 0 to avoid ambiguity.
-  // Agora recommends explicit UIDs for tokens.
   const uid = Math.floor(Math.random() * 20000) + 1;
 
   if (!channelName) {

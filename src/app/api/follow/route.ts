@@ -1,7 +1,6 @@
 
 import { auth } from "@/lib/auth";
 import { Follow } from "@/model/follow.model";
-import { User } from "@/model/user.model";
 import dbConnect from "@/lib/db";
 import { NextResponse } from "next/server";
 
@@ -19,7 +18,7 @@ export async function POST(req: Request) {
         }
 
         if (followingId === session.user.id) {
-             return NextResponse.json({ error: "Cannot follow yourself" }, { status: 400 });
+            return NextResponse.json({ error: "Cannot follow yourself" }, { status: 400 });
         }
 
         await dbConnect();
@@ -31,7 +30,7 @@ export async function POST(req: Request) {
         });
 
         if (existingFollow) {
-             return NextResponse.json({ error: "Already following" }, { status: 400 });
+            return NextResponse.json({ error: "Already following" }, { status: 400 });
         }
 
         // Create follow
@@ -52,13 +51,13 @@ export async function DELETE(req: Request) {
     try {
         const session = await auth();
         if (!session?.user) {
-             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
         const { followingId } = await req.json();
 
         if (!followingId) {
-             return NextResponse.json({ error: "Missing followingId" }, { status: 400 });
+            return NextResponse.json({ error: "Missing followingId" }, { status: 400 });
         }
 
         await dbConnect();
@@ -69,7 +68,7 @@ export async function DELETE(req: Request) {
         });
 
         if (!deletedFollow) {
-             return NextResponse.json({ error: "Not following" }, { status: 400 });
+            return NextResponse.json({ error: "Not following" }, { status: 400 });
         }
 
         return NextResponse.json({ message: "Unfollowed" }, { status: 200 });
@@ -81,9 +80,6 @@ export async function DELETE(req: Request) {
 }
 
 export async function GET(req: Request) {
-    // Get follow status or counts
-    // Query params: ?followingId=X (check if current user follows X)
-    // OR ?userId=Y (get followers count)
     
     try {
         const url = new URL(req.url);
@@ -107,8 +103,8 @@ export async function GET(req: Request) {
 
         // 2. Get follower count for a user
         if (countForUser) {
-             const count = await Follow.countDocuments({ followingId: countForUser });
-             return NextResponse.json({ count });
+            const count = await Follow.countDocuments({ followingId: countForUser });
+            return NextResponse.json({ count });
         }
 
         return NextResponse.json({ error: "Invalid query" }, { status: 400 });

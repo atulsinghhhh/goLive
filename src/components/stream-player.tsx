@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { IAgoraRTCRemoteUser } from "agora-rtc-sdk-ng";
 import { useAgora } from "../context/agora-provider";
 import { Loader2 } from "lucide-react";
+import Image from "next/image";
 
 export const StreamPlayer = ({ channelName }: { channelName: string }) => {
   const { client } = useAgora();
@@ -122,7 +123,7 @@ export const StreamPlayer = ({ channelName }: { channelName: string }) => {
         {!isConnected && (
             <>
                 {thumbnailUrl ? (
-                    <img src={thumbnailUrl} alt="Stream Cover" className="absolute inset-0 w-full h-full object-cover opacity-50" />
+                    <Image src={thumbnailUrl} alt="Stream Cover" fill className="absolute inset-0 object-cover opacity-50" />
                 ) : (
                     <div className="absolute inset-0 bg-linear-to-br from-purple-900/20 to-black pointer-events-none" />
                 )}

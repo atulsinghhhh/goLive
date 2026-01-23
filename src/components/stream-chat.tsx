@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState, useRef, FormEvent } from "react";
-import { io, Socket } from "socket.io-client";
+import { io } from "socket.io-client";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 interface Message {
   id: string;
@@ -25,7 +26,6 @@ export const StreamChat = ({ streamId, streamerId }: StreamChatProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isConnected, setIsConnected] = useState(false);
-  const [socket, setSocket] = useState<Socket | null>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isStreamer = session?.user?.id === streamerId;
@@ -75,32 +75,46 @@ export const StreamChat = ({ streamId, streamerId }: StreamChatProps) => {
       });
     });
 
-    socketInstance.on("connect_error", (err) => {
-        console.error("Socket connection error:", err);
+    socketInstance.on("connect_error", () => {
+        console.error("Socket connection error");
     });
 
-    setSocket(socketInstance);
+    // Store socket in ref to avoid setState in cleanup
+    const socketRef = socketInstance;
 
     return () => {
-      socketInstance.disconnect();
+      socketRef.disconnect();
     };
   }, [session?.user?.id, streamId]);
 
   const sendMessage = (e: FormEvent) => {
     e.preventDefault();
-    if (!socket || !newMessage.trim()) return;
+    if (!newMessage.trim()) return;
+    
+    // Create a new socket instance just for this message
+    const socketInstance = io("http://localhost:3001", {
+      auth: { userId: session?.user?.id }
+    });
 
-    socket.emit("chat:send", {
+    socketInstance.emit("chat:send", {
       streamId,
       message: newMessage
     });
 
     setNewMessage("");
+    socketInstance.disconnect();
   };
 
   const handleBlockUser = (userIdToBlock: string) => {
-      if (!socket || !isStreamer) return;
-      socket.emit("user:block", { streamId, userIdToBlock });
+      if (!isStreamer) return;
+      
+      // Create a new socket instance just for this action
+      const socketInstance = io("http://localhost:3001", {
+        auth: { userId: session?.user?.id }
+      });
+      
+      socketInstance.emit("user:block", { streamId, userIdToBlock });
+      socketInstance.disconnect();
   };
 
   return (
@@ -117,7 +131,7 @@ export const StreamChat = ({ streamId, streamerId }: StreamChatProps) => {
           </div>
         ) : (
             <div className="flex flex-col gap-2">
-                {messages.map((msg, i) => (
+                {messages.map((msg) => (
                     <motion.div 
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -127,7 +141,7 @@ export const StreamChat = ({ streamId, streamerId }: StreamChatProps) => {
                     >
                         <div className="w-8 h-8 rounded-full bg-muted shrink-0 overflow-hidden mt-1">
                             {msg.userId.image ? (
-                                <img src={msg.userId.image} alt={msg.userId.username} className="w-full h-full object-cover" />
+                                <Image src={msg.userId.image} alt={msg.userId.username} width={32} height={32} className="w-full h-full object-cover" />
                             ) : (
                                  <div className="w-full h-full flex items-center justify-center bg-primary text-xs font-bold text-primary-foreground uppercase">
                                     {msg.userId.username[0]}

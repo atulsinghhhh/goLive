@@ -1,12 +1,11 @@
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import dbConnect from "@/lib/db";
 import { Stream } from "@/model/stream.model";
-import { StreamParticipant } from "@/model/streamParticipant.model";
 import { Chat } from "@/model/chat.model";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
     try {
         const session = await auth();
         if (!session || !session.user) {

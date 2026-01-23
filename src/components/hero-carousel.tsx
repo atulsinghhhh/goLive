@@ -1,9 +1,8 @@
 "use client";
 
-import { Play, Volume2, VolumeX } from "lucide-react";
+import { Play } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
 
 interface Stream {
     _id: string;
@@ -17,7 +16,6 @@ interface Stream {
 }
 
 export function HeroCarousel({ stream }: { stream: Stream | null }) {
-    const [muted, setMuted] = useState(true);
 
     if (!stream) {
         return (

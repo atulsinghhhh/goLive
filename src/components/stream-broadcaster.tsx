@@ -12,7 +12,6 @@ export const StreamBroadcaster = ({ channelName }: { channelName: string }) => {
   const { client } = useAgora();
   const router = useRouter();
   
-  const [joined, setJoined] = useState(false);
   const [published, setPublished] = useState(false);
   const [localVideoTrack, setLocalVideoTrack] = useState<ICameraVideoTrack | null>(null);
   const [localAudioTrack, setLocalAudioTrack] = useState<IMicrophoneAudioTrack | null>(null);
@@ -61,7 +60,6 @@ export const StreamBroadcaster = ({ channelName }: { channelName: string }) => {
         // Check if already connected to avoid INVALID_OPERATION
         if (client.connectionState === "DISCONNECTED") {
              await client.join(process.env.NEXT_PUBLIC_APP_ID!, channelName, data.token, data.uid);
-             if (isMounted) setJoined(true);
         }
 
         const AgoraRTC = (await import("agora-rtc-sdk-ng")).default;
@@ -98,7 +96,7 @@ export const StreamBroadcaster = ({ channelName }: { channelName: string }) => {
       // Leave purely on unmount
       client.leave().catch(err => console.error("Failed to leave channel", err));
     };
-  }, [client, channelName]);
+  }, [client, channelName, localAudioTrack, localVideoTrack]);
 
   const toggleMic = async () => {
       if (localAudioTrack) {
@@ -115,16 +113,17 @@ export const StreamBroadcaster = ({ channelName }: { channelName: string }) => {
   };
 
   // Socket for Stream End notification
-  const [socket, setSocket] = useState<any>(null); // Quick type fix, ideally import Socket
+  const [socket, setSocket] = useState<{ on: (event: string, callback: (data: unknown) => void) => void; emit: (event: string, data: unknown) => void } | null>(null);
 
   useEffect(() => {
-    if (!session?.user?.id) return;
+    const userId = session?.user?.id;
+    if (!userId) return;
     
-    let socketInstance: any;
+    let socketInstance: { on: (event: string, callback: (data: unknown) => void) => void; emit: (event: string, data: unknown) => void; disconnect: () => void };
     const initSocket = async () => {
         const { io } = await import("socket.io-client");
         socketInstance = io("http://localhost:3001", {
-            auth: { userId: session.user.id }
+            auth: { userId }
         });
         setSocket(socketInstance);
     };
