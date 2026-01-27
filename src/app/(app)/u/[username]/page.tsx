@@ -137,6 +137,5 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
                 </div>
             </div>
         );
-    // No catch needed for standard errors, Next.js Error Boundary catches them.
 }
 

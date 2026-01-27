@@ -9,6 +9,7 @@ export interface IUser extends Document {
     password: string;
     avatar?: string;
     bio?: string;
+    banner?: string;
 }
 
 const userSchema = new Schema<IUser>({
@@ -33,8 +34,10 @@ const userSchema = new Schema<IUser>({
     },
     bio:{
         type:String
+    },
+    banner:{
+        type:String
     }
-
 },{ timestamps:true });
 
 userSchema.pre("save", async function () {

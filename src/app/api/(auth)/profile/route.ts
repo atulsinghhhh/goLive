@@ -13,7 +13,7 @@ export async function PUT(req: NextRequest){
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const { username,name,bio,avatar } = await req.json();
+        const { username,name,bio,avatar,banner } = await req.json();
 
         const user = await User.findById(session?.user?.id);
         if(!user){
@@ -24,6 +24,7 @@ export async function PUT(req: NextRequest){
         user.name = name;
         user.bio = bio;
         if(avatar) user.avatar = avatar;
+        if(banner) user.banner = banner;
 
         await user.save();
 
