@@ -24,8 +24,7 @@ export default async function SearchPage({
     );
   }
 
-  // Search logic
-  const streams = await Stream.find({
+  const streams = await Stream.find({ // TODO: WRITE THE BACKEND IN ANOTHER FILES.
     $or: [
         { title: { $regex: q, $options: "i" } },
         { category: { $regex: q, $options: "i" } }
@@ -46,7 +45,6 @@ export default async function SearchPage({
         Search Results for <span className="text-primary">&quot;{q}&quot;</span>
       </h1>
 
-      {/* Users Section */}
       {users.length > 0 && (
           <section>
               <h2 className="text-lg font-bold text-muted-foreground mb-4 uppercase tracking-wider">Channels</h2>
@@ -76,7 +74,6 @@ export default async function SearchPage({
           </section>
       )}
 
-      {/* Streams Section */}
       <section>
           <h2 className="text-lg font-bold text-muted-foreground mb-4 uppercase tracking-wider">Live Streams</h2>
           {streams.length > 0 ? (

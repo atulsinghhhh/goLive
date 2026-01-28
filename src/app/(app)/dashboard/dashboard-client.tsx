@@ -14,6 +14,7 @@ interface DashboardClientProps {
 }
 
 export default function DashboardClient({ user }: DashboardClientProps) {
+  
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -51,16 +52,15 @@ export default function DashboardClient({ user }: DashboardClientProps) {
   const handleGoLive = async () => {
     setLoading(true);
     try {
-      // 1. Create/Update Stream Record
       const res = await fetch("/api/stream", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: streamData.title,
-          category: streamData.category,
-          thumbnailUrl: streamData.thumbnailUrl,
-          agoraChannel: user.username // Using username as channel ID for simplicity
-        }),
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: streamData.title,
+            category: streamData.category,
+            thumbnailUrl: streamData.thumbnailUrl,
+            agoraChannel: user.username 
+          }),
       });
 
       if (!res.ok) throw new Error("Failed to initialize stream");
@@ -93,7 +93,6 @@ export default function DashboardClient({ user }: DashboardClientProps) {
         animate="animate"
         className="min-h-screen bg-background text-foreground p-4 md:p-8 space-y-8"
     >
-      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-card p-6 rounded-2xl border border-border shadow-lg gap-4">
         <div>
           <h1 className="text-3xl font-bold text-foreground">
@@ -148,15 +147,12 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                 initialCategory={streamData.category}
                 onSave={(title, category, thumbnailUrl = "") => setStreamData({ title, category, thumbnailUrl })}
             />
-            
-            {/* Action Bar */}
             <div className="bg-card border border-border rounded-xl p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                    <h3 className="text-foreground font-bold text-lg">Ready to start?</h3> 
                    <p className="text-muted-foreground text-sm">Your audience is waiting.</p>
                 </div>
                 
-                {/* Go Live Button with Motion */}
                 <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -184,31 +180,6 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                         </>
                     )}
                 </motion.button>
-            </div>
-        </div>
-
-        {/* Quick Tips / Connection Info (1/3 width) */}
-        <div className="bg-card border border-border rounded-xl p-6 h-fit shadow-md">
-            <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
-                <span className="w-1 h-6 bg-secondary rounded-full"></span>
-                Stream Info
-            </h3>
-            <div className="space-y-4">
-                <div className="bg-muted/50 p-4 rounded-lg border border-border">
-                    <p className="text-xs text-muted-foreground uppercase font-bold mb-1">Server URL</p>
-                    <code className="text-sm font-mono text-secondary break-all">rtmp://live.twitch-clone.com/app</code>
-                </div>
-                <div className="bg-muted/50 p-4 rounded-lg border border-border">
-                    <p className="text-xs text-muted-foreground uppercase font-bold mb-1">Stream Key</p>
-                    <div className="flex items-center justify-between">
-                         <code className="text-sm font-mono text-foreground blur-sm hover:blur-none transition-all cursor-pointer">
-                             live_{user.id}_key_...
-                         </code>
-                    </div>
-                </div>
-                <div className="text-xs text-muted-foreground pt-4 border-t border-border">
-                    <p>💡 <strong>Pro Tip:</strong> Check your internet connection before going live to ensure a smooth stream.</p>
-                </div>
             </div>
         </div>
       </div>

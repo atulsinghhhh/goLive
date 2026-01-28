@@ -1,17 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { ICameraVideoTrack, IMicrophoneAudioTrack } from "agora-rtc-sdk-ng";
-import { useAgora } from "../context/agora-provider";
+import type { ICameraVideoTrack, IMicrophoneAudioTrack, IAgoraRTCClient } from "agora-rtc-sdk-ng";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Mic, MicOff, Video, VideoOff, PhoneOff, Users } from "lucide-react";
 
 export const StreamBroadcaster = ({ channelName }: { channelName: string }) => {
   const { data: session } = useSession();
-  const { client } = useAgora();
   const router = useRouter();
   
+  const [client, setClient] = useState<IAgoraRTCClient | null>(null);
   const [published, setPublished] = useState(false);
   const [localVideoTrack, setLocalVideoTrack] = useState<ICameraVideoTrack | null>(null);
   const [localAudioTrack, setLocalAudioTrack] = useState<IMicrophoneAudioTrack | null>(null);
@@ -41,62 +40,86 @@ export const StreamBroadcaster = ({ channelName }: { channelName: string }) => {
       return () => clearInterval(interval);
   }, [published, channelName]);
 
-  // Initialize and Auto-Join
+  // Initialize and Auto-Join with Local Client
   useEffect(() => {
-    if (!client) return;
-    
-    // Prevent race conditions with a ref
-    let isMounted = true;
+    let mounted = true;
+    let agoraClient: IAgoraRTCClient | null = null;
+    let audioTrack: IMicrophoneAudioTrack | null = null;
+    let videoTrack: ICameraVideoTrack | null = null;
 
     const init = async () => {
       try {
+        const AgoraRTC = (await import("agora-rtc-sdk-ng")).default;
+        agoraClient = AgoraRTC.createClient({ mode: "live", codec: "vp8" });
+        setClient(agoraClient);
+
         const resp = await fetch(`/api/token?channelName=${channelName}&role=publisher`);
         const data = await resp.json();
         
         if (!data.token) throw new Error("Failed to get token");
 
-        if (!isMounted) return;
+        if (!mounted) return;
 
-        // Check if already connected to avoid INVALID_OPERATION
-        if (client.connectionState === "DISCONNECTED") {
-             await client.join(process.env.NEXT_PUBLIC_APP_ID!, channelName, data.token, data.uid);
-        }
-
-        const AgoraRTC = (await import("agora-rtc-sdk-ng")).default;
-        const [microphoneTrack, cameraTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
+        // Join first
+        await agoraClient.join(process.env.NEXT_PUBLIC_APP_ID!, channelName, data.token, data.uid);
         
-        if (!isMounted) {
-            microphoneTrack.close();
-            cameraTrack.close();
+        if (!mounted) {
+            await agoraClient.leave();
             return;
         }
 
-        setLocalAudioTrack(microphoneTrack);
-        setLocalVideoTrack(cameraTrack);
+        // Create tracks
+        [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
         
-        // Auto-publish nicely
-        await client.setClientRole("host");
-        await client.publish([microphoneTrack, cameraTrack]);
-        if (isMounted) setPublished(true);
-
-        if (videoRef.current) {
-          cameraTrack.play(videoRef.current);
+        if (!mounted) {
+            audioTrack.close();
+            videoTrack.close();
+            await agoraClient.leave();
+            return;
         }
-      } catch (error) {
+
+        setLocalAudioTrack(audioTrack);
+        setLocalVideoTrack(videoTrack);
+        
+        // Publish
+        await agoraClient.setClientRole("host");
+        await agoraClient.publish([audioTrack, videoTrack]);
+        
+        if (mounted) {
+            setPublished(true);
+            // Play video locally
+            if (videoRef.current) {
+                videoTrack.play(videoRef.current);
+            }
+        }
+      } catch (error: any) {
+        if (error.code === "OPERATION_ABORTED") {
+            // This is expected when the component unmounts during initialization
+            return;
+        }
         console.error("Failed to initialize stream:", error);
+        if (mounted && agoraClient) {
+             // Attempt cleanup on error
+             agoraClient.leave().catch(console.error);
+        }
       }
     };
 
     init();
 
     return () => {
-      isMounted = false;
-      localAudioTrack?.close();
-      localVideoTrack?.close();
-      // Leave purely on unmount
-      client.leave().catch(err => console.error("Failed to leave channel", err));
+      mounted = false;
+      audioTrack?.close();
+      videoTrack?.close();
+      setPublished(false);
+      if (agoraClient) {
+          agoraClient.leave().catch(err => {
+              if (err.code === "OPERATION_ABORTED") return;
+              console.error("Failed to leave channel", err)
+          });
+      }
     };
-  }, [client, channelName, localAudioTrack, localVideoTrack]);
+  }, [channelName]);
 
   const toggleMic = async () => {
       if (localAudioTrack) {
@@ -156,6 +179,10 @@ export const StreamBroadcaster = ({ channelName }: { channelName: string }) => {
       } catch (e) {
           console.error("Failed to update stream status", e);
       } finally {
+          // Cleanup tracks explicitly before navigating (optional, since unmount handles it)
+          localAudioTrack?.close();
+          localVideoTrack?.close();
+          client?.leave();
           router.push("/dashboard");
       }
   };
@@ -188,7 +215,7 @@ export const StreamBroadcaster = ({ channelName }: { channelName: string }) => {
                 className={`p-3 rounded-xl transition-all duration-200 ${cameraOn ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-destructive/20 text-destructive hover:bg-destructive/30'}`}
                 title={cameraOn ? "Turn Camera Off" : "Turn Camera On"}
             >
-                 {cameraOn ? <Video size={20} /> : <VideoOff size={20} />}
+                {cameraOn ? <Video size={20} /> : <VideoOff size={20} />}
             </button>
             <div className="w-px h-8 bg-white/10 mx-2"></div>
             <button 

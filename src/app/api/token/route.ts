@@ -1,5 +1,6 @@
 import { RtcTokenBuilder, RtcRole } from 'agora-token';
 import { NextRequest, NextResponse } from 'next/server';
+import { AccessToken } from "livekit-server-sdk"
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -41,5 +42,14 @@ export async function GET(request: NextRequest) {
   } catch (err) {
     console.error("Token generation failed:", err);
     return NextResponse.json({ error: 'Token generation failed' }, { status: 500 });
+  }
+}
+
+
+export async function POST(req: NextRequest){
+  try {
+    
+  } catch (error) {
+    
   }
 }

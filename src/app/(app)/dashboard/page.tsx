@@ -10,7 +10,6 @@ export default async function DashboardPage() {
   }
 
   const user = session.user;
-  // Ensure we have a valid user object with fallback for username if needed
   const userData = {
       ...user,
       id: user.id || "",

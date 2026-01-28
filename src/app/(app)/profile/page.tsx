@@ -11,7 +11,6 @@ export default function ProfileSettingsPage() {
     const router = useRouter();
     const { data: session, update } = useSession();
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const thumbnailInputRef = useRef<HTMLInputElement>(null);
     
     // Local state for form
     const [formData, setFormData] = useState({
@@ -19,7 +18,6 @@ export default function ProfileSettingsPage() {
         name: session?.user?.name || "",
         bio: session?.user?.bio || "",
         avatar: session?.user?.image || "",
-        thumbnail: "" // We will need to fetch this or assume empty if new
     });
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
@@ -75,7 +73,6 @@ export default function ProfileSettingsPage() {
             });
 
             if (res.ok) {
-                 // ... session update ...
                 await update({
                     user: {
                         name: formData.name,
