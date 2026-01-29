@@ -80,7 +80,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       token: JWT & { id?: string; username?: string | null; bio?: string | null; picture?: string | null; name?: string | null } 
     }) {
       if (session.user) {
-        session.user.id = token.id as string | undefined
+        if (token.id) {
+          session.user.id = token.id
+        }
         session.user.username = token.username ?? undefined
         session.user.bio = token.bio ?? undefined
         session.user.image = token.picture ?? undefined
