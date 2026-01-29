@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { StreamCard } from "@/components/stream-card";
+import { EventCard } from "@/components/event/event-card";
 import { RecommendedSidebar } from "@/components/recommended-sidebar";
 import { HeroCarousel } from "@/components/hero-carousel";
 import { Loader2, LogOut, LayoutDashboard } from "lucide-react";
@@ -24,8 +25,8 @@ interface StreamType {
 export default function HomePage() {
     const { data: session, status } = useSession();
     const [streams, setStreams] = useState<StreamType[]>([]);
+    const [events, setEvents] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-
     
     useEffect(() => {
         if (status === 'authenticated') {
@@ -38,15 +39,23 @@ export default function HomePage() {
     }, [session, status]);
 
     useEffect(() => {
-        const fetchStreams = async () => {
+        const fetchData = async () => {
             try {
-                const resp = await fetch("/api/stream", { cache: 'no-store' });
-                if (resp.ok) {
-                    const data = await resp.json();
-                    if (data.streams) {
-                        setStreams(data.streams);
-                    }
+                const [streamRes, eventRes] = await Promise.all([
+                    fetch("/api/stream", { cache: 'no-store' }),
+                    fetch("/api/events", { cache: 'no-store' })
+                ]);
+                
+                if (streamRes.ok) {
+                    const data = await streamRes.json();
+                    if (data.streams) setStreams(data.streams);
                 }
+
+                if (eventRes.ok) {
+                    const data = await eventRes.json();
+                    if (data.events) setEvents(data.events);
+                }
+
             } catch (e) {
                 console.error(e);
             } finally {
@@ -54,9 +63,8 @@ export default function HomePage() {
             }
         };
 
-        // console.log("username: ", session?.user?.username)
-        fetchStreams();
-        const interval = setInterval(fetchStreams, 10000); 
+        fetchData();
+        const interval = setInterval(fetchData, 10000); 
         return () => clearInterval(interval);
     }, []);
 
@@ -130,6 +138,20 @@ export default function HomePage() {
                         <HeroCarousel stream={featuredStream} />
                     </div>
 
+                    {/* Events Section */}
+                    {events.length > 0 && (
+                        <div className="mb-12">
+                            <h2 className="text-xl font-bold text-foreground flex items-center gap-2 mb-6">
+                                <span className="text-purple-500">Upcoming</span> Events
+                            </h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                {events.map(event => (
+                                    <EventCard key={event._id} event={event} />
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     <div className="flex items-center justify-between mb-6">
                         <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
                             <span className="text-primary animate-pulse">Live</span> Channels
@@ -156,25 +178,17 @@ export default function HomePage() {
                             ))}
                         </div>
                     )}
-
                     {!loading && streams.length === 0 && (
-                        <div className="flex flex-col items-center justify-center py-24 text-center border border-dashed border-border/50 rounded-2xl bg-card/30">
-                            <div className="w-20 h-20 bg-muted/30 rounded-full flex items-center justify-center mb-6 text-primary">
-                                <Loader2 className="animate-spin opacity-50" size={32} />
-                            </div>
-                            <h3 className="text-xl font-bold text-foreground mb-2">No channels live right now</h3>
-                            <p className="text-muted-foreground mb-8 max-w-sm">Be the first to start streaming and build your community!</p>
-                            <Link href="/dashboard" className="px-8 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl transition-all shadow-lg shadow-primary/20 hover:scale-105">
-                                Start Auto Streaming
-                            </Link>
+                        <p className="text-center text-muted-foreground">No live streams available at the moment. Please check back later!</p>
+                    )}
+                    {!loading && streams.length > 0 && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            {streams.map(stream => (
+                                <StreamCard key={stream._id} stream={stream} />
+                            ))}
                         </div>
                     )}
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {streams.map(stream => (
-                            <StreamCard key={stream._id} stream={stream} />
-                        ))}
-                    </div>
+                    
                 </main>
             </div>
         </div>

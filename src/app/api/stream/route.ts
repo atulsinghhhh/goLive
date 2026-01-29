@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
                 .sort({ createdAt: -1 })
                 .lean();
 
-            console.log("Fetched streams:", streams); // Debug log
+            // console.log("Fetched streams:", streams); // Debug log
 
             const streamsWithStats = await Promise.all(streams.map(async (s) => {
                 const viewerCount = await StreamParticipant.countDocuments({
@@ -29,8 +29,8 @@ export async function GET(request: NextRequest) {
 
             return NextResponse.json({ streams: streamsWithStats });
         } catch(err) {
-             console.error("Error fetching streams:", err);
-             return NextResponse.json({ error: "Failed to fetch streams" }, { status: 500 });
+            console.error("Error fetching streams:", err);
+            return NextResponse.json({ error: "Failed to fetch streams" }, { status: 500 });
         }
     }
 
@@ -49,55 +49,56 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    const session = await auth();
-    if (!session || !session.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    try {
+        const session = await auth();
+        if (!session || !session.user) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const { title, category, agoraChannel, thumbnailUrl } = await request.json();
+
+        if (!title || !category || !agoraChannel) {
+            return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+        }
+        console.log("Agora channel: ",agoraChannel);
+
+        await dbConnect();
+
+        // Use findOneAndUpdate with upsert to reuse the existing document
+        // distinct index on agoraChannel ensures we match the correct one
+        const updateData: { streamerId: string; title: string; category: string; isLive: boolean; thumbnailUrl?: string } = {
+            streamerId: session.user.id,
+            title,
+            category,
+            isLive: true,
+        };
+
+        if (thumbnailUrl) {
+            updateData.thumbnailUrl = thumbnailUrl;
+        }
+
+        console.log("thumbnailUrl: ",thumbnailUrl);
+        // 1. Mark any existing live streams by this user as ended
+        await Stream.updateMany(
+            { streamerId: session.user.id, isLive: true },
+            { isLive: false }
+        );
+
+        // 2. Create a NEW stream record
+        const stream = await Stream.create({
+            streamerId: session.user.id,
+            title,
+            category,
+            agoraChannel,
+            thumbnailUrl,
+            isLive: true
+        });
+
+        return NextResponse.json({ stream }, { status: 201 });
+    } catch (error) {
+        console.error("Error creating stream:", error);
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
-
-    const { title, category, agoraChannel, thumbnailUrl } = await request.json();
-
-    if (!title || !category || !agoraChannel) {
-        return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-    }
-    console.log("Agora channel: ",agoraChannel);
-
-    await dbConnect();
-
-    // Use findOneAndUpdate with upsert to reuse the existing document
-    // distinct index on agoraChannel ensures we match the correct one
-    const updateData: { streamerId: string; title: string; category: string; isLive: boolean; thumbnailUrl?: string } = {
-        streamerId: session.user.id,
-        title,
-        category,
-        isLive: true,
-    };
-
-    if (thumbnailUrl) {
-        updateData.thumbnailUrl = thumbnailUrl;
-    }
-
-    // 1. Mark any existing live streams by this user as ended
-    await Stream.updateMany(
-        { streamerId: session.user.id, isLive: true },
-        { isLive: false }
-    );
-
-    // 2. Create a NEW stream record
-    const stream = await Stream.create({
-        streamerId: session.user.id,
-        title,
-        category,
-        agoraChannel,
-        thumbnailUrl,
-        isLive: true
-    });
-
-    return NextResponse.json({ stream }, { status: 201 });
-  } catch (error) {
-    console.error("Error creating stream:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
-  }
 }
 
 export async function PUT(request: NextRequest) {

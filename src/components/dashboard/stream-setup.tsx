@@ -51,11 +51,13 @@ export const StreamSetup = ({ initialTitle = "", initialCategory = "Just Chattin
               body: uploadData
           });
           const result = await uploadRes.json();
+          console.log("Upload result:", result);            
 
           if (result.secure_url) {
               setThumbnailUrl(result.secure_url);
               if (onSave) onSave(title, category, result.secure_url);
           }
+          console.log("Thumbnail uploaded:", result.secure_url);
       } catch (error) {
           console.error("Thumbnail upload failed", error);
       } finally {

@@ -9,6 +9,7 @@ interface Stream {
     title: string;
     category: string;
     viewerCount: number;
+    thumbnailUrl?: string;
     streamerId: {
         username: string;
         avatar?: string;
@@ -20,11 +21,11 @@ export function HeroCarousel({ stream }: { stream: Stream | null }) {
     if (!stream) {
         return (
             <div className="w-full h-[400px] bg-zinc-900 rounded-xl flex items-center justify-center relative overflow-hidden group">
-                 <div className="absolute inset-0 bg-linear-to-b from-transparent to-black/80 z-10"></div>
-                 <div className="text-center z-20">
-                     <h2 className="text-2xl font-bold text-white mb-2">Community is everything</h2>
-                     <p className="text-zinc-400">Join the thousands of creators streaming now.</p>
-                 </div>
+                <div className="absolute inset-0 bg-linear-to-b from-transparent to-black/80 z-10"></div>
+                <div className="text-center z-20">
+                    <h2 className="text-2xl font-bold text-white mb-2">Community is everything</h2>
+                    <p className="text-zinc-400">Join the thousands of creators streaming now.</p>
+                </div>
             </div>
         );
     }
@@ -32,9 +33,19 @@ export function HeroCarousel({ stream }: { stream: Stream | null }) {
     return (
         <div className="w-full h-[400px] bg-zinc-900 rounded-xl overflow-hidden relative group shadow-2xl shadow-purple-900/10">
             <div className="absolute inset-0 bg-zinc-800">
-                <div className="w-full h-full flex items-center justify-center text-zinc-700">
-                    <Play size={64} fill="currentColor" className="opacity-50" />
-                </div>
+                {stream.thumbnailUrl ? (
+                    <Image 
+                        src={stream.thumbnailUrl} 
+                        fill 
+                        alt={stream.title}
+                        className="object-cover"
+                        priority
+                    />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center text-zinc-700">
+                        <Play size={64} fill="currentColor" className="opacity-50" />
+                    </div>
+                )}
             </div>
             
             {/* Overlay Gradient */}

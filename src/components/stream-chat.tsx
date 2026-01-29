@@ -27,6 +27,7 @@ export const StreamChat = ({ streamId, streamerId }: StreamChatProps) => {
   const [newMessage, setNewMessage] = useState("");
   const [isConnected, setIsConnected] = useState(false);
   
+  const socketRef = useRef<ReturnType<typeof io> | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isStreamer = session?.user?.id === streamerId;
 
@@ -62,6 +63,8 @@ export const StreamChat = ({ streamId, streamerId }: StreamChatProps) => {
       }
     });
 
+    socketRef.current = socketInstance;
+
     socketInstance.on("connect", () => {
       console.log("Connected to chat server");
       setIsConnected(true);
@@ -79,42 +82,28 @@ export const StreamChat = ({ streamId, streamerId }: StreamChatProps) => {
         console.error("Socket connection error");
     });
 
-    // Store socket in ref to avoid setState in cleanup
-    const socketRef = socketInstance;
-
     return () => {
-      socketRef.disconnect();
+      socketRef.current?.disconnect();
+      socketRef.current = null;
     };
   }, [session?.user?.id, streamId]);
 
   const sendMessage = (e: FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim()) return;
-    
-    // Create a new socket instance just for this message
-    const socketInstance = io("http://localhost:3001", {
-      auth: { userId: session?.user?.id }
-    });
+    if (!newMessage.trim() || !socketRef.current) return;
 
-    socketInstance.emit("chat:send", {
+    socketRef.current.emit("chat:send", {
       streamId,
       message: newMessage
     });
 
     setNewMessage("");
-    socketInstance.disconnect();
   };
 
   const handleBlockUser = (userIdToBlock: string) => {
-      if (!isStreamer) return;
+      if (!isStreamer || !socketRef.current) return;
       
-      // Create a new socket instance just for this action
-      const socketInstance = io("http://localhost:3001", {
-        auth: { userId: session?.user?.id }
-      });
-      
-      socketInstance.emit("user:block", { streamId, userIdToBlock });
-      socketInstance.disconnect();
+      socketRef.current.emit("user:block", { streamId, userIdToBlock });
   };
 
   return (

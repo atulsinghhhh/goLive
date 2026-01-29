@@ -5,6 +5,7 @@ import { Server } from "socket.io";
 import { chatMessageSchema } from "./schema/chat.schema";
 import { Chat } from "../model/chat.model";
 import { Stream } from "../model/stream.model";
+import { Event } from "../model/event.model";
 import { User } from "../model/user.model";
 import dbConnect from "./db";
 
@@ -65,14 +66,21 @@ io.on("connection", (socket) => {
         const user = socket.data.user;
 
         // Check if stream exists and if user is streamer
-        const stream = await Stream.findById(streamId);
+        // Check if stream/event exists
+        let stream = await Stream.findById(streamId);
+        let isEvent = false;
+
         if (!stream) {
-            console.error("Stream not found");
-            return;
+            const event = await Event.findById(streamId);
+            if (!event) {
+                console.error("Stream/Event not found");
+                return;
+            }
+            isEvent = true;
         }
 
-        // Check if user is blocked
-        if (stream.blockedUsers.includes(user.id)) {
+        // Check if user is blocked (Only if it's a Stream, as Event model has no blockedUsers)
+        if (!isEvent && stream && stream.blockedUsers.includes(user.id)) {
              socket.emit("chat:error", { message: "You are blocked from this stream." });
              return;
         }

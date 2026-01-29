@@ -7,7 +7,7 @@ import { User } from "next-auth";
 import { motion } from "framer-motion";
 import { StatsCard } from "@/components/dashboard/stats-card";
 import { StreamSetup } from "@/components/dashboard/stream-setup";
-import { Loader2, Radio, User as UserIcon, Clock, MessageSquare, Video } from "lucide-react";
+import { Loader2, Radio, User as UserIcon, Clock, MessageSquare, Video, Calendar } from "lucide-react";
 
 interface DashboardClientProps {
   user: User & { id: string; username: string };
@@ -101,6 +101,13 @@ export default function DashboardClient({ user }: DashboardClientProps) {
           <p className="text-muted-foreground mt-1">Ready to create content today?</p>
         </div>
         <div className="flex items-center gap-4">
+            <button 
+                onClick={() => router.push("/dashboard/events/create")}
+                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-sm flex items-center gap-2 transition-all shadow-lg shadow-purple-900/20"
+            >
+                <Calendar size={16} />
+                Create Event
+            </button>
             <div className="px-4 py-2 rounded-full bg-muted border border-border flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-zinc-500"></div>
                 <span className="text-sm font-medium text-muted-foreground">Offline</span>

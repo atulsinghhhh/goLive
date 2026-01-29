@@ -43,7 +43,11 @@ const streamSchema = new Schema<IStream>({
     blockedUsers: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: "User"
-    }]
+    }],
+    thumbnailUrl: {
+      type: String,
+      default: null
+    }
 },{timestamps: true});
 
 export const Stream = models.Stream || model<IStream>("Stream",streamSchema);
